@@ -6,11 +6,42 @@
 class Matrix{
   static const int n = 4;
   int matrix[n][n];
+  int score;
 public:
   void init();
-  void move(int direction);
+  void move(int, bool&);
   void printTest();
+  bool isOver();
+  int  getElement(int, int);
+  void printFormat();
+  int  getScore();
 };
+
+int Matrix::getScore(){
+	return score;
+}
+
+int Matrix::getElement(int line, int col){
+	return matrix[line][col];
+}
+
+bool Matrix::isOver(){
+  for(int i = 0; i < n; ++i){
+    for(int j = 0; j < n; ++j){
+      if(!matrix[i][j])
+        return false;
+      if(j < n-1 && matrix[i][j] == matrix[i][j+1])
+        return false;
+      if(j > 0 && matrix[i][j] == matrix[i][j-1])
+        return false;
+      if(i < n-1 && matrix[i][j] == matrix[i+1][j])
+        return false;
+      if(i > 0 && matrix[i][j] == matrix[i-1][j])
+        return false;
+    }
+  }
+  return true;
+}
 
 void Matrix::printTest(){
   for(int i = 0; i < n; ++i){
@@ -18,6 +49,15 @@ void Matrix::printTest(){
       std::cout << matrix[i][j];
     std::cout << "\n";
   }
+}
+
+void Matrix::printFormat(){
+	for(int i = 0; i < n; ++i){
+		for(int j = 0; j < n; ++j){
+			std::cout << "| " << matrix[i][j] << " |";
+		}
+		std::cout << "\n";
+	}
 }
 
 void Matrix::init(){
@@ -38,13 +78,18 @@ void Matrix::init(){
      2
  */
 
-void Matrix::move(int direction){
+void Matrix::move(int direction, bool& gameover){
   auto newEl = [&](){
                  srand(time(0));
                  int ri = rand() % n, rj = rand() % n;
                  while(matrix[ri][rj])ri = rand() % n, rj = rand() % n;
                  matrix[ri][rj] = 2;
                };
+  if(isOver()){
+    std::cout << "Game over!";
+    gameover = true;
+  } else {
+    gameover = false;
   switch (direction){
     //move left
   case -1:
@@ -53,7 +98,8 @@ void Matrix::move(int direction){
         if(matrix[i][j] && (!matrix[i][j-1] || matrix[i][j-1] == matrix[i][j])){
           int aux = j-1;
           while(aux > 0 && !matrix[i][aux]) --aux;
-          if(matrix[i][aux] == matrix[i][j]) matrix[i][aux] *= matrix[i][aux];
+          if(matrix[i][aux] == matrix[i][j]) matrix[i][aux] *= 2,
+			score += matrix[i][aux];
           else if(!matrix[i][aux]) matrix[i][aux] = matrix[i][j];
           else matrix[i][aux+1] = matrix[i][j];
           matrix[i][j] = 0;
@@ -69,7 +115,8 @@ void Matrix::move(int direction){
         if(matrix[i][j] && (!matrix[i][j+1] || matrix[i][j+1] == matrix[i][j])){
           int aux = j+1;
           while(aux < n-1 && !matrix[i][aux]) ++aux;
-          if(matrix[i][aux] == matrix[i][j]) matrix[i][aux] *= matrix[i][aux];
+          if(matrix[i][aux] == matrix[i][j]) matrix[i][aux] *= 2,
+		score += matrix[i][aux];
           else if(!matrix[i][aux]) matrix[i][aux] = matrix[i][j];
           else matrix[i][aux-1] = matrix[i][j];
           matrix[i][j] = 0;
@@ -85,7 +132,8 @@ void Matrix::move(int direction){
         if(matrix[i][j] && (!matrix[i-1][j] || matrix[i-1][j] == matrix[i][j])){
           int aux = i-1;
           while(aux > 0 && !matrix[aux][j]) --aux;
-          if(matrix[aux][j] == matrix[i][j]) matrix[aux][j] *= matrix[aux][j];
+          if(matrix[aux][j] == matrix[i][j]) matrix[aux][j] *= 2,
+		score += matrix[aux][j];
           else if(!matrix[aux][j]) matrix[aux][j] = matrix[i][j];
           else matrix[i][aux+1] = matrix[i][j];
           matrix[i][j] = 0;
@@ -101,7 +149,8 @@ void Matrix::move(int direction){
         if(matrix[i][j] && (!matrix[i+1][j] || matrix[i+1][j] == matrix[i][j])){
           int aux = i+1;
           while(aux < n-1 && !matrix[aux][j]) ++aux;
-          if(matrix[aux][j] == matrix[i][j]) matrix[aux][j] *= matrix[aux][j];
+          if(matrix[aux][j] == matrix[i][j]) matrix[aux][j] *= 2,
+		score += matrix[aux][j];
           else if(!matrix[aux][j]) matrix[aux][j] = matrix[i][j];
           else matrix[i][aux-1] = matrix[i][j];
           matrix[i][j] = 0;
@@ -113,17 +162,5 @@ void Matrix::move(int direction){
   default:
     break;
   }
+  }
 }
-
-int main(){
-  Matrix* m = new Matrix();
-  m->init();
-  m->printTest();
-  std::cout << "\n";
-  m->move(2);
-  m->printTest();
-
-  return 0;
-}
-
-//g++ -o 2048 2048.cc `sdl2-config --cflags --libs` -lSDL2_ttf -fconcepts -fpermissive 
